@@ -1,19 +1,21 @@
 import requests
-import misc
+import misc #импортируем модуль с токеном бота
 import datetime
 
-from time import sleep
+from time import sleep # функция для создания паузы в выполнении программы
 
+# Определяем переменные с URL бота в API Telegram
 token = misc.token
 bot_url = 'https://api.telegram.org/bot'+token+'/'
 
-# Получаем список обновлений, возвращаем словарь
+# Функция: Получаем список обновлений, возвращаем словарь
 def get_updates():
     url = bot_url + 'getupdates'
     r = requests.get(url)
     return r.json()
 
-# Получаем последнее сообщение из списка обновлений, возвращаем словарём
+# Функция:Получаем последнее сообщение из списка обновлений, возвращаем словарём
+# или False если список сообщений пуст
 def get_last_message():
     data = get_updates()
     if data['result']:
@@ -26,7 +28,7 @@ def get_last_message():
     return message
 
 
-# Отправляем текстовое сообщение в чат по указанному id
+# Функция:Отправляем текстовое сообщение в чат по указанному id
 def send_message(chat_id,text='Wait...'):
     url = bot_url+'sendmessage?chat_id={}&text={}'.format(chat_id,text)
     requests.get(url)
@@ -34,7 +36,7 @@ def send_message(chat_id,text='Wait...'):
 
 
 
-
+# Основная функция содержащая тело бота
 def main():
     # Задаём словарь информационных команд
     dict_of_info_command = {
@@ -49,7 +51,7 @@ def main():
         '/session@FiitRndBot':'Информация о сессии',
         # Спсиок группы с контактами
         '/gruop_list':"Спсиок группы с контактами",
-        '/gruop_list@FiitRndBot': "Спсиок группы с контактами"
+        '/gruop_list@FiitRndBot': "Спиcок группы с контактами"
     }
 
 
@@ -67,7 +69,7 @@ def main():
         0:['Непрерывная математика','Философия'],
         1:['Иностранный язык','Иностранный язык'],
         2:['Самостоятельная работа','Самостоятельная работа'],
-        3:['Алгебра и Геометрия','Алгебра и Геометрия'],
+        3:['Основы программирования','Язык программирования C++'],
         4:['Основы программирования','Проект'],
         }
 
@@ -80,13 +82,13 @@ def main():
     schedule = schedule_up
     # Задаём значение последнего update_id
     last_upd_id = 1
-    # Флаг инициализации типа понедельник
+    # Флаг инициализации недели
     init_week = False
 
 
     # Бесконечный цикл бота
     while True:
-        # В понедельник меняем значение верхней нижней недели
+        #  Меняем значение верхней нижней недели
         if not init_week:
             if updown=='up':
                 updown = 'down'
@@ -109,7 +111,7 @@ def main():
             if last_upd_id == message['update_id']: #если оно то же самое то переходим к следующей итерации
                 sleep(2)
                 continue
-            else:# Если нет, то обновляем значение последнего update_id
+            else:# Если нет, то обновляем значение последнего update_id и выполняем последующие команды
                 last_upd_id = message['update_id']
 
 
