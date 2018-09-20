@@ -16,10 +16,13 @@ def get_updates():
 # Получаем последнее сообщение из списка обновлений, возвращаем словарём
 def get_last_message():
     data = get_updates()
-    update_id = data['result'][-1]['update_id']
-    chat_id = data['result'][-1]['message']['chat']['id']
-    text_message = data['result'][-1]['message']['text']
-    message = {'update_id':update_id, 'chat_id':chat_id,'text':text_message}
+    if data['result']:
+        update_id = data['result'][-1]['update_id']
+        chat_id = data['result'][-1]['message']['chat']['id']
+        text_message = data['result'][-1]['message']['text']
+        message = {'update_id':update_id, 'chat_id':chat_id,'text':text_message}
+    else:
+        message= False
     return message
 
 
@@ -54,15 +57,15 @@ def main():
 
     # Расписание на верхнюю и на нижнюю неделю
     schedule_up = {
-        0:['Непрерывная математика','Дискретная математика'],
-        1:['Иностранный язык','Иностранный язык'],
+        0:['Непрерывная математика','Непрерывная математика'],
+        1:['Основы программирования(практикум)','Основы программирования(практикум)'],
         2:['Самостоятельная работа','Самостоятельная работа'],
-        3:['Алгебра и Геометрия','Алгебра и Геометрия'],
-        4:['История','История'],
+        3:['Основы программирования','Язык программирования C++'],
+        4:['Математическая логика','Философия'],
         }
     schedule_down = {
-        0:['Непрерывная математика','Непрерывная математика'],
-        1:['Дискретная математика','Дискретная математика'],
+        0:['Непрерывная математика','Философия'],
+        1:['Иностранный язык','Иностранный язык'],
         2:['Самостоятельная работа','Самостоятельная работа'],
         3:['Алгебра и Геометрия','Алгебра и Геометрия'],
         4:['Основы программирования','Проект'],
@@ -77,75 +80,98 @@ def main():
     schedule = schedule_up
     # Задаём значение последнего update_id
     last_upd_id = 1
+    # Флаг инициализации типа понедельник
+    init_week = False
 
 
     # Бесконечный цикл бота
     while True:
         # В понедельник меняем значение верхней нижней недели
-        if datetime.datetime.today().weekday() == 0 and updown=='up':
-            updown = 'down'
-            schedule = schedule_down
-        elif datetime.datetime.today().weekday() == 0 and updown=='down':
-            updown = 'up'
-            schedule = schedule_up
-        # Получаем последнее сообщенеие
-        message = get_last_message()
-        if last_upd_id == message['update_id']: #если оно то же самое то переходим к следующей итерации
-            sleep(2)
-            continue
-        else:# Если нет, то обновляем значение последнего update_id
-            last_upd_id = message['update_id']
-
-
-
-        # Инициализируем переменную отправляемого текста
-        send_text = 'foobar'
-        try:#Пытаемся записать в переменную отправляемого текста значение соответствующее команде(если этот текст команда)
-            send_text = dict_of_info_command[message['text']]
-        except:# Если ключ в словаре не найден, значит это не инфо команда
-            if (message['text'] == '/schedule_init' or message['text'] == '/schedule_init@FiitRndBot') \
-                    and message['chat_id'] not in schedule_chat_list:
-                schedule_chat_list.append(message['chat_id'])
-                send_message(message['chat_id'], 'Неделя =' + updown)
-                send_message(message['chat_id'],','.join(schedule[datetime.datetime.today().weekday()]))
-            elif (message['text'] == '/schedule_stop' or message['text'] == '/schedule_stop@FiitRndBot') \
-                    and message['chat_id']  in schedule_chat_list:
-                schedule_chat_list.remove(message['chat_id'])
-                send_message(message['chat_id'],'Отправка расписания остановлена')
-            elif message['text'] == '/init_up' or message['text'] == '/init_up@FiitRndBot':
-                updown = 'up'
-                schedule = schedule_up
-                send_message(message['chat_id'], 'Эта неделя верхняя')
-            elif message['text'] == '/init_down@FiitRndBot' or message['text'] == '/init_down@FiitRndBot':
+        if not init_week:
+            if updown=='up':
                 updown = 'down'
                 schedule = schedule_down
-                send_message(message['chat_id'], 'Эта неделя нижняя')
-            else:
-                send_text = 'Не в списке инфо команд'
+                init_week = True
+            elif updown=='down':
+                updown = 'up'
+                schedule = schedule_up
+                init_week = True
 
-        # Если отправляемый текст отличен от заглушки "foobar" значит в send_text ответ на инфо команду
-        if send_text != 'foobar':
-            send_message(message['chat_id'],send_text)# Отправляем его в ответ на пришедшее сообщение
-            print('send text= '+ send_text)
+        # В конце недели меням значения флага инизиализации недели
+        if datetime.datetime.today().weekday() == 6 and datetime.datetime.today().hour ==23 and datetime.datetime.today().minute ==59 and datetime.datetime.today().second >= 55 :
+            init_week = False
 
-        # Рассылаем расписание в чаты
-        if datetime.datetime.today().weekday() in range(5) and datetime.datetime.today().hour == 19 and send_schedule_bool==False:
+
+        # Получаем последнее сообщенеие
+        message = get_last_message()
+        # Если список сообщений не пуст тогда делаем всё что в этом if (разбор команды и ответ)
+        if message:
+            if last_upd_id == message['update_id']: #если оно то же самое то переходим к следующей итерации
+                sleep(2)
+                continue
+            else:# Если нет, то обновляем значение последнего update_id
+                last_upd_id = message['update_id']
+
+
+
+            # Инициализируем переменную отправляемого текста
+            send_text = 'foobar'
+            try:#Пытаемся записать в переменную отправляемого текста значение соответствующее команде(если этот текст команда)
+                send_text = dict_of_info_command[message['text']]
+            except:# Если ключ в словаре не найден, значит это не инфо команда
+                if (message['text'] == '/schedule_init' or message['text'] == '/schedule_init@FiitRndBot') \
+                        and message['chat_id'] not in schedule_chat_list:
+                    schedule_chat_list.append(message['chat_id'])
+                    send_message(message['chat_id'], 'Неделя =' + updown)
+                    send_message(message['chat_id'],','.join(schedule[datetime.datetime.today().weekday()]))
+                elif (message['text'] == '/schedule_stop' or message['text'] == '/schedule_stop@FiitRndBot') \
+                        and message['chat_id']  in schedule_chat_list:
+                    schedule_chat_list.remove(message['chat_id'])
+                    send_message(message['chat_id'],'Отправка расписания остановлена')
+                elif message['text'] == '/init_up' or message['text'] == '/init_up@FiitRndBot':
+                    updown = 'up'
+                    schedule = schedule_up
+                    send_message(message['chat_id'], 'Эта неделя верхняя')
+                elif message['text'] == '/init_down' or message['text'] == '/init_down@FiitRndBot':
+                    updown = 'down'
+                    schedule = schedule_down
+                    send_message(message['chat_id'], 'Эта неделя нижняя')
+                else:
+                    send_text = 'Не в списке инфо команд'
+
+            # Если отправляемый текст отличен от заглушки "foobar" значит в send_text ответ на инфо команду
+            if send_text != 'foobar':
+                send_message(message['chat_id'],send_text)# Отправляем его в ответ на пришедшее сообщение
+                print('send text= '+ send_text)
+            # Если текст сообщения stop останавливаем бота
+            if message['text'] == 'stop':
+                print(message['text'])
+                break
+
+
+
+
+
+
+        # Рассылаем расписание в чаты в 9.00 если оно уже не разослано
+        if datetime.datetime.today().weekday() in range(5) and datetime.datetime.today().hour == 9 and not send_schedule_bool:
             for i in schedule_chat_list:
                 send_message(i, 'Неделя ='+updown)
                 send_message(i, ','.join(schedule[datetime.datetime.today().weekday()]))
             send_schedule_bool = True
 
+
+
         # В 23 часу сбрасываем флаг отправки расписания
-        if datetime.datetime.today().weekday() in range(5) and datetime.datetime.today().hour == 23 and send_schedule_bool == True:
+        if datetime.datetime.today().weekday() in range(5) and datetime.datetime.today().hour == 23 and send_schedule_bool:
             send_schedule_bool = False
 
-        print(schedule_chat_list)
-        print(datetime.datetime.today().hour)
-        # Ждём 2 секунды до следующего запроса, если текст сообщения = stop, то тогда останавливаем бота
-        sleep(2)
-        if message['text'] == 'stop':
-            print(message['text'])
-            break
+        # print(schedule_chat_list)
+        # print(datetime.datetime.today().hour)
+
+        # Ждём 1 секунду до следующего запроса
+        sleep(1)
+
 
 
 
