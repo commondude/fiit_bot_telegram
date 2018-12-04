@@ -12,7 +12,7 @@ import fiitinfo  # Модуль с информацией по группе Фи
 servertz = pytz.timezon("Europe/Moscow")
 
 
-
+# То что нужно считывать и записывать на диск.
 # Инициализирую перемнную верхняя\нижняя неделя
 updown = 'up'
 # Инициализируем список чатов для отправки расписания
@@ -26,33 +26,36 @@ last_upd_id = 1
 init_week = False
 
 # Функция команды schedule_init
-def do_schedule_init():
+def do_schedule_init(chat_id):
+    if chat_id not in schedule_chat_list:
+        schedule_chat_list.append(chat_id)
+    else:
+        talk2telegramapi.send_message(chat_id,'Ваш чат уже есть в списке рассылки.')
+
 
 
 # Функция команды schedule_stop
-def do_schedule_stop():
+def do_schedule_stop(chat_id):
+    if chat_id  in schedule_chat_list:
+        schedule_chat_list.remove(chat_id)
+    else:
+        talk2telegramapi.send_message(chat_id,'Вашего чата нет в списке рассылки.')
 
 
 
 # Функция команды init_up
-def do_init_up():
+def do_init_up(chat_id):
     updown = 'up'
+    talk2telegramapi.send_message(chat_id,'Теперь неделя верхняя.')
     # необходима авторизация изменения верх. ниж. недели
 
 
 # Функция команды init_down
-def do_init_down():
+def do_init_down(chat_id):
     updown = 'down'
+    talk2telegramapi.send_message(chat_id,'Теперь неделя нижняя.')
     # необходима авторизация изменения верх. ниж. недели
 
-
-# Функция команды
-
-# Функция команды
-
-# Функция команды
-
-# Функция команды
 
 
 # Задаём словарь информационных команд
@@ -108,6 +111,7 @@ def main():
         # В конце недели меням значения флага инизиализации недели
         if now.weekday() == 6 and now.hour ==23 and now.minute ==59 and now.second >= 55 :
             init_week = False
+            sleep(10)#Избегаем повторноо переключения недели. Изменение этой перевнной должно быть 1 раз в неделю
 
 
         # Получаем последнее сообщенеие
@@ -136,38 +140,32 @@ def main():
 
                 # Инизиализация типа недели
                 elif (msg_text == '/init_up' or msg_text == '/init_up@FiitRndBot'):
-                    do_init_up()
+                    do_init_up(msg_chat_id)
 
                 elif (msg_text == '/init_down' or msg_text == '/init_down@FiitRndBot'):
-                    do_init_down()
+                    do_init_down(msg_chat_id)
 
                 #  Отправляем информацию о Деканате
                 elif (msg_text == '/dean'  or msg_text =='/dean@FiitRndBot'):
-                    dict_of_commands[msg_text]()
+                    talk2telegramapi.send_message(msg_chat_id,'Cюда вставляем из модуля инфо')
 
                 # Отправляем информацию о Дисциплинах
                 elif (msg_text == '/disciplines' or msg_text == '/disciplines@FiitRndBot'):
-                    dict_of_commands[msg_text]()
+                    talk2telegramapi.send_message(msg_chat_id,'Cюда вставляем из модуля инфо')
 
                 # Отправляем информацию о Сессии
                 elif (msg_text == '/session' or msg_text == '/session@FiitRndBot'):
-                    dict_of_commands[msg_text]()
+                    talk2telegramapi.send_message(msg_chat_id,'Cюда вставляем из модуля инфо')
 
                 # Отправляем список группы
                 elif (msg_text == '/gruop_list' or msg_text == '/gruop_list@FiitRndBot'):
-                    dict_of_commands[msg_text]()
+                    talk2telegramapi.send_message(msg_chat_id,'Cюда вставляем из модуля инфо')
 
-
-
-
-
-
-
-                elif
+                else:
+                    talk2telegramapi.send_message(msg_chat_id,'Кто-то забыл прописать функцию для команды.')
 
             else:
-                send_text = 'Не в списке инфо команд'
-                talk2telegramapi.send_message(message['chat_id'],send_text)
+                talk2telegramapi.send_message(message['chat_id'],'Не в списке команд')
 
 
 
@@ -194,8 +192,6 @@ def main():
         if now.weekday() in range(5) and now.hour == 23 and send_schedule_bool:
             send_schedule_bool = False
 
-        # print(schedule_chat_list)
-        # print(now.hour)
 
         # Ждём 1 секунду до следующего запроса
         sleep(1)
