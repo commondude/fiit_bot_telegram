@@ -3,8 +3,6 @@ import datetime
 import pytz
 
 from time import sleep # функция для создания паузы в выполнении программы
-
-import misc #импортируем модуль с токеном бота
 import talk2telegramapi # модуль с функциями общения с API Telegram
 import fiitinfo  # Модуль с информацией по группе Фиит
 
