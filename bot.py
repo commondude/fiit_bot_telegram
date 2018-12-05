@@ -6,36 +6,23 @@ from time import sleep # функция для создания паузы в в
 import talk2telegramapi # модуль с функциями общения с API Telegram
 import fiitinfo  # Модуль с информацией по группе Фиит
 
-# Задаём часовой пояс
-servertz = pytz.timezon("Europe/Moscow")
 
-
-# То что нужно считывать и записывать на диск.
-# Инициализирую перемнную верхняя\нижняя неделя
-updown = 'up'
-# Инициализируем список чатов для отправки расписания
-schedule_chat_list = []
-# Флаг рассылки расписание(было сегодня разослано или нет)
-send_schedule_bool = False
-schedule = fiitinfo.schedule_up
-# Задаём значение последнего update_id
-last_upd_id = 1
-# Флаг инициализации недели
-init_week = False
 
 # Функция команды schedule_init
-def do_schedule_init(chat_id):
+def do_schedule_init(chat_id,schedule_chat_list):
     if chat_id not in schedule_chat_list:
         schedule_chat_list.append(chat_id)
+        talk2telegramapi.send_message(chat_id,'Ваш чат добавлен в список рассылки.')
     else:
         talk2telegramapi.send_message(chat_id,'Ваш чат уже есть в списке рассылки.')
 
 
 
 # Функция команды schedule_stop
-def do_schedule_stop(chat_id):
+def do_schedule_stop(chat_id,schedule_chat_list):
     if chat_id  in schedule_chat_list:
         schedule_chat_list.remove(chat_id)
+        talk2telegramapi.send_message(chat_id,'Ваш чат удалён из списка рассылки.')
     else:
         talk2telegramapi.send_message(chat_id,'Вашего чата нет в списке рассылки.')
 
@@ -69,26 +56,44 @@ dict_of_commands = {
     '/session@FiitRndBot':'Информация о сессии',
     # Спсиок группы с контактами
     '/gruop_list':"Спсиок группы с контактами",
-    '/gruop_list@FiitRndBot': "Спиcок группы с контактами"
+    '/gruop_list@FiitRndBot': "Спиcок группы с контактами",
     # Инизиализация  рассылки расписания
-    '/schedule_init':
-    '/schedule_init@FiitRndBot':
+    '/schedule_init':'Инизиализация рассылки расписания',
+    '/schedule_init@FiitRndBot':'Инизиализация рассылки расписания',
     # Остановка рассылки расписания
-    '/schedule_stop':
-    '/schedule_stop@FiitRndBot':
+    '/schedule_stop':'Остановка рассылки расписания',
+    '/schedule_stop@FiitRndBot':'Остановка рассылки расписания',
     # Инициализация верхней недели
-    '/init_up':
-    '/init_up@FiitRndBot':
+    '/init_up':'Инициализация верхней недели',
+    '/init_up@FiitRndBot':'Инициализация верхней недели',
     # Инициализация нижней недели
-    '/init_down':
-    '/init_down@FiitRndBot':
+    '/init_down':'Инициализация нижней недели',
+    '/init_down@FiitRndBot':'Инициализация нижней недели',
 
 }
 
 
 
+
 # Основная функция содержащая тело бота
 def main():
+    # Задаём часовой пояс
+    servertz = pytz.timezone("Europe/Moscow")
+
+    # То что нужно считывать и записывать на диск.
+    # Инициализирую перемнную верхняя\нижняя неделя
+    updown = 'up'
+    # Инициализируем список чатов для отправки расписания
+    schedule_chat_list = []
+    # Флаг рассылки расписание(было сегодня разослано или нет)
+    send_schedule_bool = False
+    schedule = fiitinfo.schedule_up
+    # Задаём значение последнего update_id
+    last_upd_id = 1
+    # Флаг инициализации недели
+    init_week = False
+
+
 
     # Бесконечный цикл бота
     while True:
@@ -114,8 +119,7 @@ def main():
 
         # Получаем последнее сообщенеие
         message = talk2telegramapi.get_last_message()
-        msg_text = message['text']
-        msg_chat_id = message['chat_id']
+
 
         # Если список сообщений не пуст тогда делаем всё что в этом if (разбор команды и ответ)
         if message:
@@ -125,16 +129,19 @@ def main():
             else:# Если нет, то обновляем значение последнего update_id и выполняем последующие команды
                 last_upd_id = message['update_id']
 
+            # Присваиваем переменным значения из вновь пришедшего сообщения
+            msg_text = message['text']
+            msg_chat_id = message['chat_id']
 
             # Переписываем выбор команды
 
             if msg_text in dict_of_commands :
                 # Инизиализация и остановка рассылки расписания
                 if (msg_text == '/schedule_init' or msg_text == '/schedule_init@FiitRndBot'):
-                    do_schedule_init(msg_chat_id)
+                    do_schedule_init(msg_chat_id,schedule_chat_list)
 
                 elif (msg_text == '/schedule_stop' or msg_text == '/schedule_stop@FiitRndBot'):
-                    do_schedule_stop(msg_chat_id)
+                    do_schedule_stop(msg_chat_id,schedule_chat_list)
 
                 # Инизиализация типа недели
                 elif (msg_text == '/init_up' or msg_text == '/init_up@FiitRndBot'):

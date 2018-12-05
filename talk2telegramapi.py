@@ -14,13 +14,19 @@ def get_updates():
 # или False если список сообщений пуст
 def get_last_message():
     data = get_updates()
-    if data['result']:
-        update_id = data['result'][-1]['update_id']
-        chat_id = data['result'][-1]['message']['chat']['id']
-        text_message = data['result'][-1]['message']['text']
-        message = {'update_id':update_id, 'chat_id':chat_id,'text':text_message}
-    else:
+    try:
+        if data['result']:
+            update_id = data['result'][-1]['update_id']
+            chat_id = data['result'][-1]['message']['chat']['id']
+            text_message = data['result'][-1]['message']['text']
+            message = {'update_id':update_id, 'chat_id':chat_id,'text':text_message}
+
+    except:
         message= False
+        print('Нет новых сообщений.')
+        print(type(data))
+        print(data.keys())
+        print(data.values())
     return message
 
 # Функция:Отправляем текстовое сообщение в чат по указанному id
