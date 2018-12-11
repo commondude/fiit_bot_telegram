@@ -30,15 +30,15 @@ def do_schedule_stop(chat_id,schedule_chat_list):
 
 # Функция команды init_up
 def do_init_up(chat_id):
-    updown = 'up'
     talk2telegramapi.send_message(chat_id,'Теперь неделя верхняя.')
+    return fiitinfo.schedule_up, 'up'
     # необходима авторизация изменения верх. ниж. недели
 
 
 # Функция команды init_down
 def do_init_down(chat_id):
-    updown = 'down'
     talk2telegramapi.send_message(chat_id,'Теперь неделя нижняя.')
+    return fiitinfo.schedule_down, 'down'
     # необходима авторизация изменения верх. ниж. недели
 
 
@@ -55,8 +55,8 @@ dict_of_commands = {
     '/session':'Информация о сессии',
     '/session@FiitRndBot':'Информация о сессии',
     # Спсиок группы с контактами
-    '/gruop_list':"Спсиок группы с контактами",
-    '/gruop_list@FiitRndBot': "Спиcок группы с контактами",
+    '/group_list':"Спсиок группы с контактами",
+    '/group_list@FiitRndBot': "Спиcок группы с контактами",
     # Инизиализация  рассылки расписания
     '/schedule_init':'Инизиализация рассылки расписания',
     '/schedule_init@FiitRndBot':'Инизиализация рассылки расписания',
@@ -69,7 +69,12 @@ dict_of_commands = {
     # Инициализация нижней недели
     '/init_down':'Инициализация нижней недели',
     '/init_down@FiitRndBot':'Инициализация нижней недели',
-
+    # Расписание на неделю
+    '/schedule_week':'Расписание на эту неделю',
+    '/schedule_week@FiitRndBot':'Расписание на эту неделю',
+    # Службная команда
+    '/vars':'Значения переменных в стандартный вывод',
+    '/vars@FiitRndBot':'Значения переменных в стандартный вывод',
 }
 
 
@@ -145,27 +150,46 @@ def main():
 
                 # Инизиализация типа недели
                 elif (msg_text == '/init_up' or msg_text == '/init_up@FiitRndBot'):
-                    do_init_up(msg_chat_id)
+                    schedule, updown = do_init_up(msg_chat_id)
 
                 elif (msg_text == '/init_down' or msg_text == '/init_down@FiitRndBot'):
-                    do_init_down(msg_chat_id)
+                    schedule, updown = do_init_down(msg_chat_id)
 
                 #  Отправляем информацию о Деканате
                 elif (msg_text == '/dean'  or msg_text =='/dean@FiitRndBot'):
-                    talk2telegramapi.send_message(msg_chat_id,'Cюда вставляем из модуля инфо')
+                    talk2telegramapi.send_message(msg_chat_id,fiitinfo.dean_info)
 
                 # Отправляем информацию о Дисциплинах
                 elif (msg_text == '/disciplines' or msg_text == '/disciplines@FiitRndBot'):
-                    talk2telegramapi.send_message(msg_chat_id,'Cюда вставляем из модуля инфо')
+                    disciplines = ''
+                    for i in fiitinfo.disciplines:
+                        disciplines += i['name']+'\n'+i['teacher']+'\n'+i['phone']+'\n'+'\n'
+                    talk2telegramapi.send_message(msg_chat_id,disciplines)
 
                 # Отправляем информацию о Сессии
                 elif (msg_text == '/session' or msg_text == '/session@FiitRndBot'):
-                    talk2telegramapi.send_message(msg_chat_id,'Cюда вставляем из модуля инфо')
+                    talk2telegramapi.send_message(msg_chat_id,fiitinfo.session_info)
 
                 # Отправляем список группы
-                elif (msg_text == '/gruop_list' or msg_text == '/gruop_list@FiitRndBot'):
-                    talk2telegramapi.send_message(msg_chat_id,'Cюда вставляем из модуля инфо')
+                elif (msg_text == '/group_list' or msg_text == '/group_list@FiitRndBot'):
+                    grouplist = ''
+                    for i in fiitinfo.students:
+                        grouplist += i['firstname']+' '+i['surname']+' '+i['patronymic']+' '+'\n'+i['phone']+'\n'+'Номер в журнале'+i['journal_number']+'\n'+'\n'
 
+                    talk2telegramapi.send_message(msg_chat_id,grouplist)
+
+                elif (msg_text == '/schedule_week' or msg_text == '/schedule_week@FiitRndBot'):
+                    schedule_week = ''
+                    for i in range(0,5):
+                        schedule_week += fiitinfo.week_days[i]+'\n'+ str(schedule[i]) +'\n'+'\n'
+                    talk2telegramapi.send_message(msg_chat_id,schedule_week)
+
+                elif (msg_text == '/vars' or msg_text == 'vars@FiitRndBot'):
+                    print('schedule_chat_list= ',schedule_chat_list)
+                    print('updown= ',updown)
+                    print('send_schedule_bool= ',send_schedule_bool)
+                    print('schedule= ',schedule)
+                    print('Время на сервере ',now)
                 else:
                     talk2telegramapi.send_message(msg_chat_id,'Кто-то забыл прописать функцию для команды.')
 

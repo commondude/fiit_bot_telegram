@@ -20,7 +20,10 @@ def get_last_message():
             chat_id = data['result'][-1]['message']['chat']['id']
             text_message = data['result'][-1]['message']['text']
             message = {'update_id':update_id, 'chat_id':chat_id,'text':text_message}
-
+        else:
+            for i in data:
+                print(i,data[i])
+            message = False
     except:
         message= False
         print('Нет новых сообщений.')
