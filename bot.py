@@ -184,7 +184,7 @@ def main():
                         schedule_week += fiitinfo.week_days[i]+'\n'+ str(schedule[i]) +'\n'+'\n'
                     talk2telegramapi.send_message(msg_chat_id,schedule_week)
 
-                elif (msg_text == '/vars' or msg_text == 'vars@FiitRndBot'):
+                elif (msg_text == '/vars' or msg_text == '/vars@FiitRndBot'):
                     print('schedule_chat_list= ',schedule_chat_list)
                     print('updown= ',updown)
                     print('send_schedule_bool= ',send_schedule_bool)
