@@ -2,3 +2,6 @@
 *~
 __pycache__
 venv_fiit_bot
+Procfile
+.git
+misc.py
