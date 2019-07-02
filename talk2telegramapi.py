@@ -1,4 +1,4 @@
-import requests
+import requests# Импортируем библиотеку с функциями http запросов
 import misc #импортируем модуль с токеном бота
 
 token = misc.token
