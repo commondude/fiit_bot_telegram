@@ -1,7 +1,4 @@
-*.pyc
-*~
-__pycache__
-venv_fiit_bot
-Procfile
 .git
 misc.py
+fiitinfo.py
+venv_fiitbot
